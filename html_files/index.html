@@ -1,1 +1,473 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
 
+.playerbutton {
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 48px;
+  margin: 4px 2px;
+  cursor: pointer;
+  width:215px;
+  height:75px;
+  border-radius: 8px;
+}
+
+.namebutton {
+  border: none;
+  color: cyan;
+  padding: 3px 10px;
+  text-align: center;
+  text-decoration: none;
+  //display: inline-block;
+  font-size: 16px;
+  margin: 2px 1px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.resetbutton {
+  border: none;
+  color: red;
+  padding: 3px 10px;
+  text-align: center;
+  vertical-align: center;
+  text-decoration: none;
+  //display: inline-block;
+  font-size: 24px;
+  margin: 4px 2px;
+  cursor: pointer;
+  width:215px;
+  height:40px;
+  border-radius: 8px;
+}
+
+.button-container {
+  display: flex;
+}
+
+.buttonPlus {background-color: green;} /* Green */
+.buttonMinus {background-color: red;} /* Red */
+.buttonName {background-color: #008CBA;} /* Blue */
+.buttonReset {background-color: black;}
+
+.playerbutton:disabled {
+  opacity: 50%;
+}
+
+</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electric Tin</title>
+
+</head>
+<body>
+<font color="magenta" size="144px"><b><i>Electric Tin</i></b></font><br>
+<div class="button-container">
+<button class="resetbutton buttonReset" onClick="resetScores()">Next Game</button>
+<button class="resetbutton buttonReset" onClick="resetAll()">Next Match</button></div><br>
+<label for="P1name">Player 1 (6 chars displayed):</label><br>
+
+<div class="button-container">
+  <input style="width:210px; height:30px; font-size:24px; type=text;" id="p1Name" name="p1Name" value="987654310">
+  <button class="namebutton buttonName" onClick="p1NameChange()">Change P1 Name</button><br>
+  </div>
+<div class="button-container">
+  <button class="playerbutton buttonPlus" id="p1SPlus" onClick="p1ScorePlus()">P1+</button>
+  <button class="playerbutton buttonMinus" id="p1SMinus" onClick="p1ScoreMinus()">P1-</button>
+  </div>
+<br>
+
+<big style="font-size:144px;"><b><span id="p1Score"></span><span id="scoreColon"> :</span><span id="p2Score"></span></b></big>
+<br><br>
+  <label for="P2name">Player 2 (6 chars displayed):</label><br>
+  <div class="button-container">
+  <input style="width:210px; height:30px; font-size:24px; type=text;" id="p2Name" name="p2Name" value="0123456789">
+<button class="namebutton buttonName" onClick="p2NameChange()">Change P2 Name</button><br>
+</div>
+<div class="button-container">
+<button class="playerbutton buttonPlus" id="p2SPlus" onClick="p2ScorePlus()">P2+</button>
+<button class="playerbutton buttonMinus" id="p2SMinus" onClick="p2ScoreMinus()">P2-</button></div><br>
+<span>Games:</span><br>
+<big style="font-size:36px;"><b><span id="p1Games"></span><span id="gamesColon"> :</span><span id="p2Games"></span></b></big>
+
+<br>
+<textarea id="messageArea" name="messageArea" rows="20" cols="100">Messages should arrive here</textarea>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+<script type="text/javascript" language="javascript">
+    // Create a client instance
+    let client = null;
+    let connected = false;
+    let connectionAttempt = 1;
+    let player1Score = 0;
+    let player2Score = 13;
+    let player1Name = "9876543210";
+    let player2Name = "0123456789";
+    let player1Games = 0;
+    let player2Games = 0;
+
+
+    const clientId = "MY_UNIQUE_CLIENT";
+
+    // const hostname = "broker.hivemq.com";
+    const hostname = "1d5bdb6bff0045f18a89594e49c4f19b.s1.eu.hivemq.cloud";
+
+    const port = 8884;
+    const path = "/mqtt";
+    const user = "test1";
+    const pass = "Hell0W0rld";
+
+    const keepAlive = 60;
+    const timeout = 30;
+    const tls = true;
+    const cleanSession = false;
+    const lastWillTopic = `Test/LastWills/${clientId}`;
+    const lastWillQos = 0;
+    const lastWillRetain = true;
+    const lastWillMessageVal = `Last will of ${clientId}`;
+    const subscribeTopicFilter = "SquashScore";
+
+		logMessage(`INFO    Running score update lines`);
+
+    client = new Paho.MQTT.Client(hostname, Number(port), path, clientId);
+    logMessage(`INFO    Connecting to Server: [Host: ${hostname}, Port: ${port}, Path: ${client.path}, ID: ${clientId}]`);
+
+    // set callback handlers
+    client.onConnectionLost = onConnectionLost;
+    client.onMessageArrived = onMessageArrived;
+    client.onConnected = onConnected;
+
+    let lastWillMessage = new Paho.MQTT.Message(lastWillMessageVal);
+    lastWillMessage.destinationName = lastWillTopic;
+    lastWillMessage.qos = lastWillQos;
+    lastWillMessage.retained = lastWillRetain;
+
+    const connectOptions = {
+        invocationContext: {
+            host: hostname,
+            port: port,
+            path: client.path,
+            clientId: clientId
+        },
+        timeout: timeout,
+        keepAliveInterval: keepAlive,
+        cleanSession: cleanSession,
+        useSSL: tls,
+        onSuccess: onConnect,
+        onFailure: onFail,
+        userName: user,
+        password: pass,
+        willMessage: lastWillMessage
+    };
+    // connect the client
+    client.connect(connectOptions);
+
+
+    function onConnect() {
+        // Once a connection has been made, make a subscription and send a message.
+        logMessage("INFO    Connected to MQTT broker");
+
+
+        const qos = 1;
+        //logMessage(`INFO    Subscribing to: [Topic: ${subscribeTopicFilter}, QoS: ${qos}]`);
+        client.subscribe(subscribeTopicFilter, { qos: Number(qos) });
+
+    }
+
+    function onConnected(reconnect, uri) {
+        // Once a connection has been made, make a subscription and send a message.
+        logMessage(`INFO    Client Has now connected: [Reconnected: ${reconnect}, URI: ${uri}]`);
+        connected = true;
+    }
+
+    function onFail(context) {
+        logMessage(`ERROR   Failed to connect. [Error Message: ${context.errorMessage}]`);
+        connected = false;
+    }
+
+    function onConnectionLost(responseObject) {
+        logMessage("INFO    onConnectionLost")
+        if (responseObject.errorCode !== 0)
+            logMessage(`ERROR    onConnectionLost: ${responseObject.errorMessage}, Code: ${responseObject.errorCode}`);
+
+        // Set a timer for 2 seconds to reconnect
+        const reconnectSeconds = 2 * connectionAttempt
+        connectionAttempt += 1
+        setTimeout(() => {
+            logMessage(`INFO    Reconnecting in ${reconnectSeconds}...`);
+            if (connectOptions.hasOwnProperty("mqttVersionExplicit")){
+                delete connectOptions.mqttVersionExplicit
+            }
+            client.connect(connectOptions)
+        }, reconnectSeconds*1000); // 1000 milliseconds = 1 second
+    }
+
+		function onMessageArrived(message) {
+        logMessage(`Received message: ${safeTagsRegex(message.payloadString)}, Topic: ${message.destinationName}, QoS: ${message.qos}, Retained: ${message.retained}`)
+    }
+    // Just in case someone sends html
+
+    function safeTagsRegex(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").
+        replace(/>/g, "&gt;");
+    }
+
+
+    function logMessage(message){
+        document.getElementById("messageArea").value += `${message}\n`;
+        console.log(message);
+    }
+
+    function p2NameChange() {
+    	document.getElementById("messageArea").value = "";					// clear the message box
+      if(document.getElementById("p2Name").value.length != 0)			// if there is a value
+      {
+        player2Name = document.getElementById("p2Name").value;		// get value
+        if(player2Name.length > 6)																// if more chars than wanted...
+        {
+        	player2Name = player2Name.slice(0,6);										// ...shorten the string
+        }
+        logMessage("p2Name="+player2Name);											  // print to the message window
+
+				publishMessage("p2Name:"+player2Name);         						// send the message
+      }
+      else																												// no name
+      {
+      	logMessage("ERROR:   Player 2 name must contain at least 1 character");		// show error message
+        alert("Player 2 name must contain at least 1 character");
+      }
+    }
+
+    function p2ScoreMinus() {
+    	if(player2Score > 0) {
+	      player2Score--;
+        publishMessage("Score:" + player1Score + "-" + player2Score);
+      }
+      else {
+      	alert("Player 2 score is already 0");
+      }
+      updateLocalScore();
+	  }
+
+    function p2ScorePlus() {
+      player2Score++;
+      logMessage(`INFO    Press P2+ button`);
+
+      if(checkScorePlayer2()) {													// if true, player2 wins
+
+        if(confirm("Player 2 wins the game?")) {				// is this ok?
+          publishMessage("Score:" + player1Score + "-" + player2Score);
+          player2Games++;
+          publishMessage("Games:" + player1Games + "-" + player2Games)
+
+          publishMessage("Win:p2");
+          document.getElementById("messageArea").value = ``;
+          disableButtons();
+          document.getElementById("p1Score").textContent=player2Name+" WINS " + player2Score;
+          document.getElementById("p2Score").textContent=player1Score;
+          if(player2Games==3) {
+              document.getElementById("p1Score").textContent=player2Name+" WINS " + player2Games;
+              document.getElementById("p2Score").textContent=player1Games + "GAMES";
+              publishMessage("Match:p2");
+          }
+	      }
+      	else {				  															  // player1 win not ok
+        	player2Score--;																//	decrement player1 score to put it back
+        	alert("No change to scores\n");								//	display message
+          updateLocalScore();
+      	}
+      }
+      else {
+      	publishMessage("Score:" + player1Score + "-" + player2Score);		// just send the score
+        updateLocalScore();
+      }
+
+    }
+
+    function p1NameChange() {
+    	document.getElementById("messageArea").value = "";					// clear the message box
+      if(document.getElementById("p1Name").value.length != 0)			// if there is a value
+      {
+        player1Name = document.getElementById("p1Name").value;		// get value
+        if(player1Name.length > 6)																// if more chars than wanted...
+        {
+        	player1Name = player1Name.slice(0,6);										// ...shorten the string
+        }
+        logMessage("p1Name="+player1Name);												// print to the message window
+
+     		publishMessage("p1Name:"+player1Name);										 // publish the name
+      }
+      else																												// no name
+      {
+      	logMessage("ERROR:   Player 1 name must contain at least 1 character");		// show error message
+        alert("Player 1 name must contain at least 1 character");	// let user know
+      }
+    }
+
+    function p1ScoreMinus() {
+    	if(player1Score > 0) {
+	      player1Score = player1Score - 1;
+        publishMessage("Score:" + player1Score + "-" + player2Score);
+      }
+      else {
+      	alert("Player 1 score is already 0");
+      }
+      updateLocalScore();
+	  }
+
+    function p1ScorePlus() {
+      logMessage(`INFO    Press P1+ button`);
+      player1Score++;																	  // increment player1 score
+
+      if(checkScorePlayer1()) {													// if true, player1 wins
+
+        if(confirm("Player 1 wins the game?")) {				// is this ok?
+          publishMessage("Score:" + player1Score + "-" + player2Score);
+          player1Games++;
+          publishMessage("Games:" + player1Games + "-" + player2Games)
+
+          publishMessage("Win:p1");											//  yes
+          document.getElementById("messageArea").value = ``;
+          disableButtons();
+
+          document.getElementById("p1Score").textContent=player1Name+" WINS " + player1Score;
+          document.getElementById("p2Score").textContent=player2Score;
+          if(player1Games==3) {
+          	 document.getElementById("p1Score").textContent=player1Name+" WINS " + player1Games;
+             document.getElementById("p2Score").textContent=player2Games + " GAMES";
+             publishMessage("Match:p1");
+          }
+	    }
+      	else {				  															  // player1 win not ok
+        	player1Score--;																//	decrement player1 score to put it back
+        	alert("No change to scores\n");								//	display message
+          updateLocalScore();
+      	}
+      }
+      else {
+      	publishMessage("Score:"+player1Score+"-"+player2Score);		// just send the score
+        updateLocalScore();
+      }
+
+    }
+
+    function checkScorePlayer1() {
+      if((player1Score == 15) && (player2Score <= 13)) {								// is it a normal game win for player1?
+        return true;																										// 	player1 wins
+      }
+      else {																														// else
+        if((player1Score > 15) && (player2Score <= player1Score-2)) {		// 	is the score an extended win for player1?
+          return true;      																						// 	player1 wins
+        }
+        else {																													//  else
+          return false;																									//   player1 adds 1
+        }
+      }
+    }
+
+ 		function checkScorePlayer2() {
+      if((player2Score == 15) && (player1Score <= 13)) {								// is it a normal game win for player2?
+        return true;																										// 	player2 wins
+      }
+      else {																														// else
+        if((player2Score > 15) && (player1Score <= player2Score-2)) {		// 	is the score an extended win for player1?
+          return true;      																						// 	player1 wins
+        }
+        else {																													//  else
+          return false;																									//   player1 adds 1
+        }
+      }
+    }
+
+    function publishMessage(messageText) {
+
+      const publishTopicFilter = "SquashScore";													// set topic
+      const qos = 1;																										// set qos
+      const retain = false;																							// set retain
+
+      var mqttMessage = new Paho.MQTT.Message(messageText);							// set Paho MQTT message
+
+      logMessage(`INFO    Publishing Message: [Topic: ${publishTopicFilter}, Payload: ${messageText}, QoS: ${qos}, Retain: ${retain}]\n`);
+      mqttMessage.destinationName = publishTopicFilter;
+      mqttMessage.qos = Number(qos);
+      mqttMessage.retained = retain;
+      client.send(mqttMessage);
+
+      logMessage(`INFO    Message sent\n`);
+    }
+
+		function updateLocalScore() {
+      logMessage(`SCORE:   player1 ${player1Score}:${player2Score} player2`);
+    	document.getElementById("p1Score").textContent = player1Score;
+    	document.getElementById("p2Score").textContent = player2Score;
+      document.getElementById("p1Games").textContent = player1Games;
+      document.getElementById("p2Games").textContent = player2Games;
+    }
+
+    function resetScores() {
+    	if(confirm("Really next game?")) {
+      	player1Score = 0;
+        player2Score = 0;
+        publishMessage("Games:" + player1Games + "-" + player2Games);
+        publishMessage("Score:0-0");
+        publishMessage("Next:Game");
+
+        updateLocalScore();
+        enableButtons();
+      }
+    }
+
+    function resetAll() {
+    	if(confirm("Really next match?")) {
+      	player1Score = 0;
+        player2Score = 0;
+        publishMessage("Next:Match");
+        p1Name = "PLAY1";
+        p2Name = "PLAY2";
+        document.getElementById("p1Name").textContent = p1Name;
+        document.getElementById("p2Name").textContent = p2Name;
+
+        publishMessage("p1Name:" + p1Name);
+        publishMessage("p2Name:" + p2Name);
+        player1Games=0;
+        player2Games=0;
+        publishMessage("Games:" + player1Games + "-" + player2Games);
+        publishMessage("Score:" + player1Score + "-" + player2Score);
+        updateLocalScore();
+
+        enableButtons();
+      }
+    }
+
+    function disableButtons() {
+        document.getElementById("p1SPlus").disabled = true;
+        document.getElementById("p1SMinus").disabled = true;
+        document.getElementById("p2SPlus").disabled = true;
+        document.getElementById("p2SMinus").disabled = true;
+    }
+
+    function enableButtons() {
+        document.getElementById("p1SPlus").disabled = false;
+        document.getElementById("p1SMinus").disabled = false;
+        document.getElementById("p2SPlus").disabled = false;
+        document.getElementById("p2SMinus").disabled = false;
+    }
+
+    function getPlayerNames() {
+    		player1Name = document.getElementById("p1Name").value.slice(0, 6);
+        player2Name = document.getElementById("p2Name").value.slice(0, 6);
+    }
+
+    getPlayerNames();
+		updateLocalScore();
+
+</script>
+
+</body>
+</html>
