@@ -3,8 +3,7 @@ An HTML-controlled LED-matrix scoreboard using Adafruit Matrix Portal boards (ei
 MQTT requires a broker and not wanting to host my own, I used the HiveMQ free offering.\
 A TLS-secured connection is required to keep the MQTT private - this took a while to get going on both the Arduino and HTML but seems to work for me.\
 \
-Specifically a scoreboard for squash (my preferred game) Arduino code to drive LED panel(s), usually 64x32 or 64x64. Smaller matrices are available.\
-Based on PAR to 15.\
+Specifically a scoreboard for squash (my preferred game) Arduino code to drive LED panel(s), usually 64x32 or 64x64. Smaller matrices are available. Based on PAR to 15.\
 \
 Code is written in Arduino IDE (currently 2.3.2) - see:\
     &emsp;/project_files folder for Arduino files\
