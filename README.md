@@ -23,8 +23,8 @@ Libraries/versions used:\
   \
 To use this project directly, copy the contents of project_files to a folder in your Arduino folder with the same name as the main file (currently ElectricTin_SSL_h). Copy the two font files to the Adafruit_GFX/Fonts folder otherwise the project will not compile.\
 Ensure the #defines are correct for the type of board you are using - either MPM4 or MPS3 - as listed in the code and then compile and upload to your board.\
- \
- \
+&nbsp;\
+&nbsp;\
 # HTML
 The HTML code is definitely a work in progress but will publish to the HiveMQ broker on a topic which is then issued to the subscribing Matrix Portal. Again, this is specific to squash scoring - but could be adapted for anything else.\
 There is the ability to increment/decrement the score for a player and the page confirms the game/match win. Based on PAR to 15.
