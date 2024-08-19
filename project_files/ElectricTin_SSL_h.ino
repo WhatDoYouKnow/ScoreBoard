@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------
 
 ElectricTin_SSL_h is intended to use MQTT over the Matrix Portal S3 or M4 WiFi
-to talk to HiveMQ broker.
+to talk to HiveMQ broker - other brokers are available.
 
 Includes:
 ArduinoMqttClient.h + dependencies
@@ -169,33 +169,33 @@ bool     p2ScoreUpdate;
 bool     mqttUpdate;
 
 char     p1Name[10] = {"PLAY1"};   // red player
-char     p2Name[10] = {"PLAY2"};  // blue player
+char     p2Name[10] = {"PLAY2"};   // blue player
 
 uint8_t  p1Games;
 uint8_t  p2Games;
 
 int8_t    mqttErrorString;
-uint8_t   currentMessage = 0;
-uint8_t   receivedMessage = 0;
+uint8_t   currentMessage = 0;     // current message in circular buffer
+uint8_t   receivedMessage = 0;    // messages waiting to be processed in buffer - hard-coded to 10
 
-uint16_t   timerCheck;                // apparently, 60 seconds is the default - needs to be a uint16 rather than uint8
+uint16_t   timerCheck;            // apparently, 60 seconds is the default - needs to be a uint16 rather than uint8
 
-char      message[10][30];
-char      messageHeader[10][15];
-char      messagePayload[10][15];
+char      message[10][30];        // 10 messaages can be waiting - split into header and payload
+char      messageHeader[10][15];  // 10 message headers 
+char      messagePayload[10][15]; // 10 message payloads
 
 
 void setup(void) 
 {
   uint8_t serialCount;
   uint8_t loopCount;
-  char    buff[200];
+  char    buff[200];              // store sprintf messages for serial output
 
-  serialStart();
-  wifiStart();
+  serialStart();                  // start the serial port
+  wifiStart();                    // start the wifi
 
-  delay(2000);
-  mqttStart();
+  delay(2000);                    // wait for 2 seconds
+  mqttStart();                    // start the mqtt service
 
 }
 
@@ -205,33 +205,30 @@ void loop(void)
   uint8_t count_down;
   uint8_t loopCount;
 
-  char player1[10];
-  char player2[10];
+  char player1[10];               // player 1 name
+  char player2[10];               // player 2 name
 
-  char buff[30];
+  char buff[30];                  // message buffer
 
-  bool lockMQTT = false;
+  bool lockMQTT = false;          //
 
-  uint8_t tempScore1;
-  uint8_t tempScore2;
+  uint8_t tempScore1;             //
+  uint8_t tempScore2;             //
 
-  flashMessage();
+  flashMessage();                 // flash an area of the screen
 
-  //write_big_title();
-  //delay(5000);
+  startSubscription();            // start mqtt subscription
 
-  startSubscription();
+  delay(5000);                    // wait 5 seconds - arbitrary wait
 
-  delay(5000);  
+  clearScreen();                  // clear the screen
 
-  clearScreen();
-
-  writeGamesTitle();
-  writeGamesScore();
-  writeP1Name(p1Name, LEFT);
-  writeP2Name(p2Name, RIGHT);
-  writeScoreDigit(p1Score, LEFT, RED);
-  writeScoreDigit(p2Score, RIGHT, BLUE);
+  writeGamesTitle();              // show the games title
+  writeGamesScore();              // show the games score
+  writeP1Name(p1Name, LEFT);              // write the player names
+  writeP2Name(p2Name, RIGHT);             // write the player names
+  writeScoreDigit(p1Score, LEFT, RED);    // write score on the left in RED
+  writeScoreDigit(p2Score, RIGHT, BLUE);  // write score on the right in BLUE
 
   // this section processes messages with a keepalive of slightly less than 60s
   // due to the nature of potentially successive messages, process even when not sending keepalive
@@ -249,45 +246,55 @@ void loop(void)
 
     if(mqttUpdate)                // if we have a message to process
     {
-      splitMessage();
-      Serial.print("currentMessage: ");Serial.println(currentMessage);
-      Serial.print("receivedMessage: ");Serial.println(receivedMessage);
-      Serial.print(messageHeader[currentMessage]); Serial.print(":"); Serial.println(messagePayload[currentMessage]); 
+      splitMessage();             // message is spilt on ":" first, then"-" if necessary
+      #ifdef DEBUG
+        Serial.print("currentMessage: ");Serial.println(currentMessage);
+        Serial.print("receivedMessage: ");Serial.println(receivedMessage);
+        Serial.print(messageHeader[currentMessage]); Serial.print(":"); Serial.println(messagePayload[currentMessage]); 
+      #endif
 
-      if(strcmp(messageHeader[currentMessage], "p1Name") == 0)
+      if(strcmp(messageHeader[currentMessage], "p1Name") == 0)        // if message is about p1Name
       {
-        strcpy(p1Name, messagePayload[currentMessage]);
-        clearNameLeft();
-        writeP1Name(messagePayload[currentMessage], LEFT);
-        Serial.println("p1Name change");
+        strcpy(p1Name, messagePayload[currentMessage]);               // get the name
+        clearNameLeft();                                              // clear the left display
+        writeP1Name(messagePayload[currentMessage], LEFT);            // print new name on the left
+        #ifdef DEBUG
+          Serial.println("p1Name change");
+        #endif
       }
       else
       {
-        if(strcmp(messageHeader[currentMessage], "p2Name") == 0)
+        if(strcmp(messageHeader[currentMessage], "p2Name") == 0)      // if message is about p2Name
         {
-          strcpy(p2Name, messagePayload[currentMessage]);
-          clearNameRight();
-          writeP2Name(messagePayload[currentMessage], RIGHT);
-          Serial.print("p2Name change");
+          strcpy(p2Name, messagePayload[currentMessage]);             // get the name
+          clearNameRight();                                           // clear the right display
+          writeP2Name(messagePayload[currentMessage], RIGHT);         // print the new name on the right
+          #ifdef DEBUG                    
+            Serial.print("p2Name change");
+          #endif
         }
         else
         {
-          if(strcmp(messageHeader[currentMessage], "Games") == 0)
+          if(strcmp(messageHeader[currentMessage], "Games") == 0)     // if message is about games score
           {
-            Serial.println("Games");
-            getGames();
-            refreshDisplay();
+            #ifdef DEBUG
+              Serial.println("Games");
+            #endif
+            getGames();                                               // process the message
+            refreshDisplay();                                         // refresh
           }
           else
           {
-            if(strcmp(messageHeader[currentMessage], "Score") == 0)
+            if(strcmp(messageHeader[currentMessage], "Score") == 0)   // if the message is about score within the game
             {
-              getScores();
-              Serial.println("Current game score");
-              clearScore();
-              writeScoreDigit(p1Score, LEFT, RED);
-              writeScoreColon();
-              writeScoreDigit(p2Score, RIGHT, BLUE);
+              getScores();                                            // precess the message
+              #ifdef DEBUG  
+                Serial.println("Current game score");
+              #endif
+              clearScore();                                            // clear the old score
+              writeScoreDigit(p1Score, LEFT, RED);                     // print p1Score
+              writeScoreColon();                                      
+              writeScoreDigit(p2Score, RIGHT, BLUE);                   // print p2Score
             }
             else
             {
@@ -340,11 +347,13 @@ void loop(void)
       if(receivedMessage == currentMessage)             // if no new messages, stop checking
         mqttUpdate = false;
       
-      for(count_up=0;count_up<10;count_up++)            // print the message queue - neatly
-      {
-        sprintf(buff, "Mess%d: %s_%s\n", count_up, messageHeader[count_up], messagePayload[count_up]);
-        Serial.print(buff);
-      }
+      #ifdef DEBUG
+        for(count_up=0;count_up<10;count_up++)            // print the message queue - neatly
+        {
+          sprintf(buff, "Mess%d: %s_%s\n", count_up, messageHeader[count_up], messagePayload[count_up]);
+          Serial.print(buff);
+        }
+      #endif
     }
     #ifdef DEBUG_BUFFER
       Serial.println(currentMessage);
@@ -362,7 +371,7 @@ void loop(void)
 
 void onMqttMessage(int p_messageSize)
 {
-  uint8_t parseMessage;
+  uint8_t parseMessage;           // count charactersin message
 
   // got a message of size p_messageSize
   #ifdef DEBUG
@@ -378,42 +387,49 @@ void onMqttMessage(int p_messageSize)
   while(mqttClient.available())
   {
     message[receivedMessage][parseMessage] = mqttClient.read();
-    Serial.print(message[receivedMessage][parseMessage]);
+    #ifdef DEBUG
+      Serial.print(message[receivedMessage][parseMessage]);
+    #endif
     parseMessage++;
   }
   message[receivedMessage][parseMessage] = '\0';     // terminate string
-  Serial.print("\n\n");
+  #ifdef DEBUG
+    Serial.print("\n\n");
+  #endif
 
-  if(receivedMessage < 9)
-    receivedMessage++;
-  else
-    receivedMessage = 0;
+  if(receivedMessage < 9)                 // circular buffer management
+    receivedMessage++;                    // ...
+  else                                    // ...
+    receivedMessage = 0;                  // ...
 
-  mqttUpdate = true;
+  mqttUpdate = true;                      // show there is a message
 }
 
 /* void splitMessage(void)
 * Splits the message based on ':'
-* stores the split message in two char arrays:
+* stores the split message in two global char arrays:
 * messageHeader[]
 * messagePayload[]
 *
 */
 void splitMessage(void)
 {
-  char localMessage[30];
-  char * localMessageHeader;    // used to pacify strtok
-  char * localMessagePayload;
+  char localMessage[30];        // get a copy of the message - strtok destroys the char array
+  char * localMessageHeader;    // used to hold the message header
+  char * localMessagePayload;   // used t hold the message payload
 
-  Serial.print("message[currentMessage]: ");Serial.println(message[currentMessage]);
-  strcpy(localMessage, message[currentMessage]);
-  Serial.print("localMessage (splitMessage): "); Serial.println(localMessage);
-  localMessageHeader = strtok(localMessage, ":");
-  strcpy(messageHeader[currentMessage], localMessageHeader);
-  Serial.print("Header: "); Serial.println(messageHeader[currentMessage]);
-  localMessagePayload = strtok(NULL, ":");
-  strcpy(messagePayload[currentMessage], localMessagePayload);
-  Serial.print("Payload: "); Serial.println(messagePayload[currentMessage]);
+  strcpy(localMessage, message[currentMessage]);              // get a copy
+  localMessageHeader = strtok(localMessage, ":");             // split on ":"
+  strcpy(messageHeader[currentMessage], localMessageHeader);  // copy to header queue
+  localMessagePayload = strtok(NULL, ":");                    // parse the rest of the message on "-"
+  strcpy(messagePayload[currentMessage], localMessagePayload);// copy to payload queue
+  
+  #ifdef DEBUG
+    Serial.print("message[currentMessage]: ");Serial.println(message[currentMessage]);
+    Serial.print("localMessage (splitMessage): "); Serial.println(localMessage);
+    Serial.print("Header: "); Serial.println(messageHeader[currentMessage]);
+    Serial.print("Payload: "); Serial.println(messagePayload[currentMessage]);
+  #endif
 }
 
 
