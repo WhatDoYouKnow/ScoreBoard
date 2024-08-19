@@ -116,12 +116,13 @@
     const clientId = "MY_UNIQUE_CLIENT";
 
     // const hostname = "broker.hivemq.com";
-    const hostname = "1d5bdb6bff0045f18a89594e49c4f19b.s1.eu.hivemq.cloud";
+    // replace the hostname string with your hivemq (or other) URL
+    const hostname = "YOURALPHANUMERICSTRING32CHARS.s1.eu.hivemq.cloud";
 
-    const port = 8884;
-    const path = "/mqtt";
-    const user = "test1";
-    const pass = "Hell0W0rld";
+    const port = 8884;			// port for TLS connection to HiveMQ
+    const path = "/mqtt";		// path for HiveMQ MQTT
+    const user = "MQTT_username";	// replace this with your username
+    const pass = "MQTT_password";	// replace this with your password
 
     const keepAlive = 60;
     const timeout = 30;
@@ -133,7 +134,7 @@
     const lastWillMessageVal = `Last will of ${clientId}`;
     const subscribeTopicFilter = "SquashScore";
 
-		logMessage(`INFO    Running score update lines`);
+    logMessage(`INFO    Running score update lines`);
 
     client = new Paho.MQTT.Client(hostname, Number(port), path, clientId);
     logMessage(`INFO    Connecting to Server: [Host: ${hostname}, Port: ${port}, Path: ${client.path}, ID: ${clientId}]`);
@@ -173,11 +174,9 @@
         // Once a connection has been made, make a subscription and send a message.
         logMessage("INFO    Connected to MQTT broker");
 
-
-        const qos = 1;
+	const qos = 1;
         //logMessage(`INFO    Subscribing to: [Topic: ${subscribeTopicFilter}, QoS: ${qos}]`);
         client.subscribe(subscribeTopicFilter, { qos: Number(qos) });
-
     }
 
     function onConnected(reconnect, uri) {
@@ -225,35 +224,35 @@
     }
 
     function p2NameChange() {
-    	document.getElementById("messageArea").value = "";					// clear the message box
-      if(document.getElementById("p2Name").value.length != 0)			// if there is a value
-      {
-        player2Name = document.getElementById("p2Name").value;		// get value
-        if(player2Name.length > 6)																// if more chars than wanted...
+	document.getElementById("messageArea").value = "";					// clear the message box
+	if(document.getElementById("p2Name").value.length != 0)			// if there is a value
         {
-        	player2Name = player2Name.slice(0,6);										// ...shorten the string
-        }
-        logMessage("p2Name="+player2Name);											  // print to the message window
+        	player2Name = document.getElementById("p2Name").value;		// get value
+        	if(player2Name.length > 6)																// if more chars than wanted...
+        	{
+        		player2Name = player2Name.slice(0,6);										// ...shorten the string
+        	}
+        	logMessage("p2Name="+player2Name);											  // print to the message window
 
-				publishMessage("p2Name:"+player2Name);         						// send the message
+		publishMessage("p2Name:"+player2Name);         						// send the message
       }
       else																												// no name
       {
-      	logMessage("ERROR:   Player 2 name must contain at least 1 character");		// show error message
-        alert("Player 2 name must contain at least 1 character");
+		logMessage("ERROR:   Player 2 name must contain at least 1 character");		// show error message
+        	alert("Player 2 name must contain at least 1 character");
       }
     }
 
     function p2ScoreMinus() {
     	if(player2Score > 0) {
-	      player2Score--;
+	        player2Score--;
         publishMessage("Score:" + player1Score + "-" + player2Score);
       }
       else {
-      	alert("Player 2 score is already 0");
+	alert("Player 2 score is already 0");
       }
       updateLocalScore();
-	  }
+    }
 
     function p2ScorePlus() {
       player2Score++;
@@ -277,8 +276,8 @@
               publishMessage("Match:p2");
           }
 	      }
-      	else {				  															  // player1 win not ok
-        	player2Score--;																//	decrement player1 score to put it back
+      	else {				  								// player1 win not ok
+        	player2Score--;										//	decrement player1 score to put it back
         	alert("No change to scores\n");								//	display message
           updateLocalScore();
       	}
@@ -306,7 +305,7 @@
       else																												// no name
       {
       	logMessage("ERROR:   Player 1 name must contain at least 1 character");		// show error message
-        alert("Player 1 name must contain at least 1 character");	// let user know
+        alert("Player 1 name must contain at least 1 character");			// let user know
       }
     }
 
