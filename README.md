@@ -25,6 +25,6 @@ To use this project directly, copy the contents of project_files to a folder in 
 Ensure the #defines are correct for the type of board you are using - either MPM4 or MPS3 - as listed in the code and then compile and upload to your board.\
 \
 \
-\
+# HTML
 The HTML code is definitely a work in progress but will publish to the HiveMQ broker on a topic which is then issued to the subscribing Matrix Portal. Again, this is specific to squash scoring - but could be adapted for anything else.\
 There is the ability to increment/decrement the score for a player and the page confirms the game/match win. Based on PAR to 15.
