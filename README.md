@@ -1,5 +1,4 @@
 # ScoreBoard
-\
 An HTML-controlled LED-matrix scoreboard using Adafruit Matrix Portal boards (either M4 or S3) with MQTT for comms.\
 MQTT requires a broker and not wanting to host my own, I used the HiveMQ free offering.\
 A TLS-secured connection is required to keep the MQTT private - this took a while to get going on both the Arduino and HTML but seems to work for me.\
@@ -28,7 +27,7 @@ Ensure the #defines are correct for the type of board you are using - either MPM
 
 
 
-
+#
 
 
 
