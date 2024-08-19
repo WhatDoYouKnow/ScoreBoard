@@ -25,10 +25,10 @@ connection-routines.ino     routines for connection to various online services
 #define DEBUG            // for most debug serial prints
 //#define DEBUG_BUFFER     // serial.print circular buffer top/tail
 // uncomment this line for a Matrix Portal S3 / comment if using M4
-#define MPS3             // MatrixPortal ESP32-S3
+// #define MPS3             // MatrixPortal ESP32-S3
 // uncomment this line for a Matrix Portal M4 / comment if using S3
-// #define MPM4            // MatrixPortal M4
-#define P64X32           // 2 x 64x32 panels
+#define MPM4            // MatrixPortal M4
+// #define P64X32           // 2 x 64x32 panels
 #define P64X64           // 1 x 64x64 panel
 
 // this #define is required for M4
@@ -63,14 +63,14 @@ connection-routines.ino     routines for connection to various online services
 // these initialisations are different depending on the board
 #ifdef MPM4
   WiFiSSLClient wifiClient;    // needed for M4 compilation
+  // initialise mqtt client
+  MqttClient mqttClient(wifiClient);
 #elif defined MPS3
   ESP_SSLClient sslClient;    // needed for S3 compilation
   WiFiClient basicClient;
+  // initialise mqtt client
+  MqttClient mqttClient(sslClient);
 #endif
-
-// initialise mqtt client
-MqttClient mqttClient(sslClient);
-
 
 // fonts for Protomatter/Adafruit GFX library
 // commented fonts are not used
@@ -105,7 +105,7 @@ The RGB matrix must be wired to VERY SPECIFIC pins, different for each
 microcontroller board. This first section sets that up for a number of
 supported boards.
 ------------------------------------------------------------------------- */
-#if defined(MPM4)       // MatrixPortal M4
+#ifdef MPM4       // MatrixPortal M4
   uint8_t rgbPins[]  = {7, 8, 9, 10, 11, 12};
   uint8_t addrPins[] = {17, 18, 19, 20, 21};
   uint8_t clockPin   = 14;
@@ -130,6 +130,7 @@ Also don't forget that the pin on the LED matrix might be
 ------------------------------------------------------------------------- */
 
 #ifdef P64X32
+#pragma message "64x32";
 Adafruit_Protomatter matrix(
   64,                          // Matrix width in pixels
   3,                           // Bit depth -- 6 here provides maximum color options / 3 may reduce artefacts with reduced colours available
@@ -141,6 +142,7 @@ Adafruit_Protomatter matrix(
   2                            // 2 = 2 x 64x32 matrices one above the other, neither rotated
   );                           // -2 = 2 x 64x32 matrices one above the other, one rotated 180 degrees
 #elif defined P64X64
+#pragma message "64x64";
 Adafruit_Protomatter matrix(
   64,                          // Matrix width in pixels
   3,                           // Bit depth -- 6 here provides maximum color options
@@ -148,9 +150,7 @@ Adafruit_Protomatter matrix(
   //4, addrPins,               // # of address pins (height is inferred), array of pins *** this is for 64x32***
   5, addrPins,                 // # of address pins (height is inferred), array of pins ***this is for 64x64***
   clockPin, latchPin, oePin,   // Other matrix control pins
-  false                        // TRUE = DOUBLE-BUFFERING / FALSE = NO BUFFERING. Not used for this program
-  //,2        // apparently, +2 = 2 x 64x32 matrices one above the other, straight
-  );             //             -2 = 2 x 64 x 32 matrices one above the other, rotated 180 degrees
+  false);                      // TRUE = DOUBLE-BUFFERING / FALSE = NO BUFFERING. Not used for this program
 #endif
 // Sundry globals used for animation ---------------------------------------
 
