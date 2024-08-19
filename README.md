@@ -1,31 +1,30 @@
 # ScoreBoard
-
-An HTML-controlled LED-matrix scoreboard using Adafruit Matrix Portal boards (either M4 or S3) with MQTT for comms.
-MQTT requires a broker and not wanting to host my own, I used the HiveMQ free offering.
-A TLS-secured connection is required to keep the MQTT private - this took a while to get going on both the Arduino and HTML but seems to work for me.
-
-The HTML page runs the Paho javascript engine for MQTT comms and javascript for the control.
-
-This is my first effort at HTML so might be a little clunky but it works as I wanted - needs polishing, though.
-
-Specifically a scoreboard for squash (my preferred game) Arduino code to drive LED panel(s), usually 64x32 or 64x64. Smaller matrices are available.
-
-Code is written in Arduino IDE (currently 2.3.2) - see:
-
-    /project_files folder for Arduino files
-    /project_files/Fonts for font files. The current project uses two font files which are better suited to displaying the score information. 
-
-Libraries/versions used:
-  Adafruit_Protomatter.h    1.6.1
-  WiFiNINA.h                1.8.14
-  WiFi.h                    1.2.7
-  ESP_SSLClient.h           2.1.11
-  ArduinoMqttClient.h       0.1.8
-  
-To use this project directly, copy the contents of project_files to a folder in your Arduino folder with the same name as the main file (currently ElectricTin_SSL_h). Copy the two font files to the Adafruit_GFX/Fonts folder otherwise the project will not compile.
-Ensure the #defines are correct for the type of board you are using - either MPM4 or MPS3 - as listed in the code and then compile and upload to yuour board.1
-
+\
+An HTML-controlled LED-matrix scoreboard using Adafruit Matrix Portal boards (either M4 or S3) with MQTT for comms.\
+MQTT requires a broker and not wanting to host my own, I used the HiveMQ free offering.\
+A TLS-secured connection is required to keep the MQTT private - this took a while to get going on both the Arduino and HTML but seems to work for me.\
+\
+The HTML page runs the Paho javascript engine for MQTT comms and javascript for the control.\
+\
+This is my first effort at HTML so might be a little clunky but it works as I wanted - needs polishing, though.\
+\
+Specifically a scoreboard for squash (my preferred game) Arduino code to drive LED panel(s), usually 64x32 or 64x64. Smaller matrices are available.\
+\
+Code is written in Arduino IDE (currently 2.3.2) - see:\
+    /project_files folder for Arduino files\
+    /project_files/Fonts for font files. The current project uses two font files which are better suited to displaying the score information.\
+\
+Libraries/versions used:\
+  Adafruit_Protomatter.h    1.6.1\
+  WiFiNINA.h                1.8.14\
+  WiFi.h                    1.2.7\
+  ESP_SSLClient.h           2.1.11\
+  ArduinoMqttClient.h       0.1.8\
+  \
+To use this project directly, copy the contents of project_files to a folder in your Arduino folder with the same name as the main file (currently ElectricTin_SSL_h). Copy the two font files to the Adafruit_GFX/Fonts folder otherwise the project will not compile.\
+Ensure the #defines are correct for the type of board you are using - either MPM4 or MPS3 - as listed in the code and then compile and upload to yuour board.
 
 
-The HTML code is definitely a work in progress but will publish to the HiveMQ broker on a topic which is then issued to the subscribing Matrix Portal. Again, this is specific to squash scoring.
+
+The HTML code is definitely a work in progress but will publish to the HiveMQ broker on a topic which is then issued to the subscribing Matrix Portal. Again, this is specific to squash scoring.\
 There is the ability to increment/decrement the score for a player and the page confirms the game/match win. Based on PAR to 15.
