@@ -11,7 +11,9 @@ This is my first effort at HTML so might be a little clunky but it works as I wa
 Specifically a scoreboard for squash (my preferred game) Arduino code to drive LED panel(s), usually 64x32 or 64x64. Smaller matrices are available.
 
 Code is written in Arduino IDE (currently 2.3.2) - see:
+
   /project_files folder for Arduino files
+  
   /project_files/Fonts for font files. The current project uses two font files which are better suited to displaying the score information. 
 
 Libraries/versions used:
