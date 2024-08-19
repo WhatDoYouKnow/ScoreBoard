@@ -41,4 +41,5 @@ The HTML code is definitely a work in progress (my first effort) but will publis
 \
 The HTML page runs the Paho javascript engine for MQTT comms and javascript for the control.\
 \
-There is the ability to increment/decrement the score for a player and the page confirms the game/match win. Based on PAR to 15.
+There is the ability to increment/decrement the score for a player and the page confirms the game/match win. Based on PAR to 15.\
+Designed to look reasonable on a mobile.
