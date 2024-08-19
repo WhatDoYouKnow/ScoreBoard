@@ -5,8 +5,6 @@ A TLS-secured connection is required to keep the MQTT private - this took a whil
 \
 The HTML page runs the Paho javascript engine for MQTT comms and javascript for the control.\
 \
-This is my first effort at HTML so might be a little clunky but it works as I wanted - needs polishing, though.\
-\
 Specifically a scoreboard for squash (my preferred game) Arduino code to drive LED panel(s), usually 64x32 or 64x64. Smaller matrices are available.\
 \
 Code is written in Arduino IDE (currently 2.3.2) - see:\
@@ -41,5 +39,5 @@ Ensure the #defines are correct for the type of board you are using - either MPM
 
 
 # HTML
-The HTML code is definitely a work in progress but will publish to the HiveMQ broker on a topic which is then issued to the subscribing Matrix Portal. Again, this is specific to squash scoring - but could be adapted for anything else.\
+The HTML code is definitely a work in progress (my first effort) but will publish to the HiveMQ broker on a topic which is then issued to the subscribing Matrix Portal. Again, this is specific to squash scoring - but could be adapted for anything else.\
 There is the ability to increment/decrement the score for a player and the page confirms the game/match win. Based on PAR to 15.
