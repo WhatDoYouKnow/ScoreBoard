@@ -18,12 +18,14 @@ Libraries/versions used:\
   \
 To use this project directly, copy the contents of project_files to a folder in your Arduino folder with the same name as the main file (currently ElectricTin_SSL_h). Copy the two font files to the Adafruit_GFX/Fonts folder otherwise the project will not compile.\
 Ensure the #defines are correct for the type of board you are using - either MPM4 or MPS3 - as listed in the code and then compile and upload to your board.\
+\
+Due the nature of the messages from the website, there may be multiple messages in quick sequence. The code processes each one when received to a circular array and this array is processed to drive the display. If not handled this way, messages get overwritten.\
+\
 
 
 
 
 
-#
 
 
 
