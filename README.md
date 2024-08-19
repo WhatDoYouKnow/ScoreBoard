@@ -15,11 +15,11 @@ Code is written in Arduino IDE (currently 2.3.2) - see:\
     /project_files/Fonts for font files. The current project uses two font files which are better suited to displaying the score information.\
 \
 Libraries/versions used:\
-  Adafruit_Protomatter.h    1.6.1\
-  WiFiNINA.h                1.8.14\
-  WiFi.h                    1.2.7\
-  ESP_SSLClient.h           2.1.11\
-  ArduinoMqttClient.h       0.1.8\
+  \tAdafruit_Protomatter.h    1.6.1\
+  \tWiFiNINA.h                1.8.14\
+  \tWiFi.h                    1.2.7\
+  \tESP_SSLClient.h           2.1.11\
+  \tArduinoMqttClient.h       0.1.8\
   \
 To use this project directly, copy the contents of project_files to a folder in your Arduino folder with the same name as the main file (currently ElectricTin_SSL_h). Copy the two font files to the Adafruit_GFX/Fonts folder otherwise the project will not compile.\
 Ensure the #defines are correct for the type of board you are using - either MPM4 or MPS3 - as listed in the code and then compile and upload to yuour board.
