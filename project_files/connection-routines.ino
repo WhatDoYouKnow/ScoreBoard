@@ -180,43 +180,50 @@ void wifiStart(void)
 void mqttStart(void)
 {
   uint8_t     loopCount;
-  Serial.print("\nConnecting to MQTT broker: ");
-  Serial.println(MQTT_BROKER);
+  #ifdef DEBUG
+    Serial.print("\nConnecting to MQTT broker: ");
+    Serial.println(MQTT_BROKER);
+  #endif
 
-  mqttClient.setUsernamePassword(MQTT_USERNAME, MQTT_PASSWORD);
+  mqttClient.setUsernamePassword(MQTT_USERNAME, MQTT_PASSWORD);   // give the MQTT client the username/password
   
   //clearScreen();
   //write_big_title();
-  clearUnderTitle();
-  setMessageFont();
-  matrix.setCursor(0,MESSAGELINE);
-  matrix.setTextColor(RED);
-  matrix.print("Connecting to MQTT broker");
+  clearUnderTitle();                                        // clear the area for a message
+  setMessageFont();                                         // set font
+  matrix.setCursor(0,MESSAGELINE);                          // set cursor
+  matrix.setTextColor(RED);                                 // set colour
+  matrix.print("Connecting to MQTT broker");                // print the message
 
   #ifdef DEBUG
     matrix.print(": \n");
     matrix.print(MQTT_BROKER);
   #endif
-  matrix.show();
+  matrix.show();                                            // show the message
   
-  loopCount = 0;
-  if(!mqttClient.connect(MQTT_BROKER, MQTT_PORT))
+  loopCount = 0;                                            // keep count of the tries
+  if(!mqttClient.connect(MQTT_BROKER, MQTT_PORT))           // try to connect
   {
-    Serial.print("MQTT connection failure. Error code: ");
-    Serial.println(mqttClient.connectError());
-    loopCount++;
-    Serial.print(loopCount);
-    delay(500);
-    //mqttClient.stop();
-    mqttClient.stop();
-    delay(500);
+    #ifdef DEBUG
+      Serial.print("MQTT connection failure. Error code: ");  
+      Serial.println(mqttClient.connectError());
+    #endif
+
+    loopCount++;                                            // increment loopCount
+    #ifdef DEBUG
+      Serial.print(loopCount);                              // show loopCount
+    #endif
+    delay(500);                                             // wait a bit
+    mqttClient.stop();                                      // stop the MQTT client
+    delay(500);                                             // wait a bit
   }
 
-  delay(2000);
-  //clearScreen();
-  clearUnderTitle();
-  matrix.setCursor(0, MESSAGELINE);
-  Serial.print("Connected to MQTT broker");Serial.println(MQTT_BROKER);Serial.print("\n");
+  delay(2000);                                              // allow user to read message
+  clearUnderTitle();                                        // clear the message area
+  matrix.setCursor(0, MESSAGELINE);                         // set the cursor
+  #ifdef DEBUG
+    Serial.print("Connected to MQTT broker");Serial.println(MQTT_BROKER);Serial.print("\n");
+  #endif
   matrix.setTextColor(GREEN);
   matrix.print("Connected to MQTT broker");
   #ifdef DEBUG
@@ -278,7 +285,9 @@ uint8_t listNetworks() {
       Serial.print(thisNet);
       Serial.print(") ");
       Serial.print(WiFi.SSID(thisNet));
-      strcpy(ssidList[thisNet], WiFi.SSID(thisNet).c_str());    // copy the ***String*** to a char array
+      #ifdef MPS3
+        strcpy(ssidList[thisNet], WiFi.SSID(thisNet).c_str());    // copy the ***String*** to a char array
+      #endif
       Serial.print("\tSignal: ");
       Serial.print(WiFi.RSSI(thisNet));
       Serial.println(" dBm");
@@ -296,7 +305,11 @@ uint8_t listNetworks() {
       while((innerLoop<ARRAY_LENGTH) && (!matchFound))
       {
         Serial.print(innerLoop);Serial.print("\t");Serial.println(SSID_ARRAY[innerLoop]);
-        if(strcmp(SSID_ARRAY[innerLoop], ssidList[loopCount]) == 0) // commented out for S3 compilation
+        #ifdef MPM4
+          if(strcmp(SSID_ARRAY[innerLoop], WiFi.SSID(loopCount)) == 0)
+        #else
+          if(strcmp(SSID_ARRAY[innerLoop], ssidList[loopCount]) == 0) // commented out for S3 compilation
+        #endif
         {                                                            // ...
           matchFound = true;                                         // ...
         }                                                            // ...
