@@ -1,12 +1,23 @@
+  /*
+ * void serialStart(void)
+ * start the serial port and wait for it to become available
+ * if not available in 2.5 seconds (probably not attached to a live USB)
+ * ignore and carry on
+ * Timing controlled by TIMER_COUNT
+ */
+
+
+
 void serialStart(void)
 {
+  const uint8_t TIMER_COUNT = 5;
   char      buff[200];
   char      buff1[20];
   uint8_t   serialCount;
 
   Serial.begin(115200);
   serialCount = 0;
-  while ((!Serial) && (serialCount < 5)) 
+  while ((!Serial) && (serialCount < TIMER_COUNT)) 
   {
     serialCount++;
     delay(500);
@@ -14,8 +25,13 @@ void serialStart(void)
 
   if(Serial)
   {
+    use_serial = true;
     sprintf(buff, "Program name: %s\nProgram date: %s\nProgram version: %s\n", PROGRAM_NAME, PROGRAM_DATE, PROGRAM_VERSION);
     Serial.println(buff);
+  }
+  else
+  {
+    use_serial = false;
   }
 }
 
@@ -55,15 +71,24 @@ void wifiStart(void)
   matrix.show();
   delay(5000);
 
-  Serial.println("Scanning available networks...");
+  if(use_serial)
+  {
+    Serial.println("Scanning available networks...");
+  }
   networkNumber = listNetworks();
 
   #ifdef DEBUG
-    Serial.print("\nConnecting to SSID: ");
-    Serial.println(SSID_ARRAY[networkNumber]);
+    if(use_serial)
+    {
+      Serial.print("\nConnecting to SSID: ");
+      Serial.println(SSID_ARRAY[networkNumber]);
+    }
   #endif
 
-  Serial.print("Network number: "); Serial.println(networkNumber);
+  if(use_serial)
+  {
+    Serial.print("Network number: "); Serial.println(networkNumber);
+  }
 
   clearUnderTitle();
   setMessageFont();
@@ -90,8 +115,11 @@ void wifiStart(void)
   while(WiFi.status() != WL_CONNECTED)
   {
     // Failed, retry
-    Serial.print(WiFi.status());
-    Serial.print(".");
+    if(use_serial)
+    {
+      Serial.print(WiFi.status());
+      Serial.print(".");
+    }
     
     matrix.setCursor(0, MESSAGELINE+12);
     matrix.print("Wifi Status: ");
@@ -101,15 +129,20 @@ void wifiStart(void)
     // any other (re)start probably disconnects the WiFi without having to do this
     #ifdef MPM4
       #ifdef DEBUG
+      if(use_serial)
+      {
         Serial.println("Disconnecting WiFi");
+      }
       #endif
       WiFi.disconnect();
     #endif
 
     delay(500);
     loopCount++;
-    Serial.print("_");Serial.print(loopCount);Serial.print("_");
-
+    if(use_serial)
+    {
+      Serial.print("_");Serial.print(loopCount);Serial.print("_");
+    }
     matrix.setCursor(0, MESSAGELINE+18);
     matrix.print("Loop count: ");
     matrix.print(loopCount);
@@ -141,8 +174,11 @@ void mqttStart(void)
 {
   uint8_t     loopCount;
   #ifdef DEBUG
-    Serial.print("\nConnecting to MQTT broker: ");
-    Serial.println(MQTT_BROKER);
+    if(use_serial)
+    {
+      Serial.print("\nConnecting to MQTT broker: ");
+      Serial.println(MQTT_BROKER);
+    }
   #endif
 
   mqttClient.setUsernamePassword(MQTT_USERNAME, MQTT_PASSWORD);   // give the MQTT client the username/password
@@ -165,13 +201,19 @@ void mqttStart(void)
   if(!mqttClient.connect(MQTT_BROKER, MQTT_PORT))           // try to connect
   {
     #ifdef DEBUG
-      Serial.print("MQTT connection failure. Error code: ");  
-      Serial.println(mqttClient.connectError());
+      if(use_serial)
+      {
+        Serial.print("MQTT connection failure. Error code: ");  
+        Serial.println(mqttClient.connectError());
+      }
     #endif
 
     loopCount++;                                            // increment loopCount
     #ifdef DEBUG
-      Serial.print(loopCount);                              // show loopCount
+      if(use_serial)
+      {
+        Serial.print(loopCount);                              // show loopCount
+      }
     #endif
     delay(500);                                             // wait a bit
     mqttClient.stop();                                      // stop the MQTT client
@@ -182,7 +224,10 @@ void mqttStart(void)
   clearUnderTitle();                                        // clear the message area
   matrix.setCursor(0, MESSAGELINE);                         // set the cursor
   #ifdef DEBUG
-    Serial.print("Connected to MQTT broker");Serial.println(MQTT_BROKER);Serial.print("\n");
+    if(use_serial)
+    {
+      Serial.print("Connected to MQTT broker");Serial.println(MQTT_BROKER);Serial.print("\n");
+    }
   #endif
   matrix.setTextColor(GREEN);
   matrix.print("Connected to MQTT broker");
@@ -195,13 +240,19 @@ void mqttStart(void)
 
   // callback setup
   mqttClient.onMessage(onMqttMessage);
-  Serial.println("Setup callback function");
+  if(use_serial)
+  {
+    Serial.println("Setup callback function");
+  }
   delay(100);
 }
 
 void startSubscription(void)
 {
-  Serial.print("Subscribing to topic: ");Serial.println(MQTT_TOPIC);
+  if(use_serial)
+  {
+    Serial.print("Subscribing to topic: ");Serial.println(MQTT_TOPIC);
+  }
   clearNameLeft();
   clearNameRight();
   clearScore();
@@ -226,31 +277,45 @@ uint8_t listNetworks() {
   char    ssidList[40][30];
 
   // scan for nearby networks:
-  Serial.println("** Scan Networks **");
+  if(use_serial)
+  {
+    Serial.println("** Scan Networks **");
+  }
   numSsid = WiFi.scanNetworks();
   if (numSsid == -1) {
-    Serial.println("Couldn't get a WiFi connection");
+    if(use_serial)
+    {
+      Serial.println("Couldn't get a WiFi connection");
+    }
     while (true);
   }
 
   // print the list of networks seen:
 
   #ifdef DEBUG
-    Serial.print("number of available networks: ");
-    Serial.println(numSsid);
-
+    if(use_serial)
+    {
+      Serial.print("number of available networks: ");
+      Serial.println(numSsid);
+    }
     // print the network number and name for each network found:
     for (thisNet = 0; thisNet < numSsid; thisNet++) 
     {
-      Serial.print(thisNet);
-      Serial.print(") ");
-      Serial.print(WiFi.SSID(thisNet));
+      if(use_serial)
+      {
+        Serial.print(thisNet);
+        Serial.print(") ");
+        Serial.print(WiFi.SSID(thisNet));
+      }
       #ifdef MPS3
         strcpy(ssidList[thisNet], WiFi.SSID(thisNet).c_str());    // copy the ***String*** to a char array
       #endif
-      Serial.print("\tSignal: ");
-      Serial.print(WiFi.RSSI(thisNet));
-      Serial.println(" dBm");
+      if(use_serial)
+      {
+        Serial.print("\tSignal: ");
+        Serial.print(WiFi.RSSI(thisNet));
+        Serial.println(" dBm");
+      }
     }
   #endif
 
@@ -264,7 +329,10 @@ uint8_t listNetworks() {
       innerLoop = 0;
       while((innerLoop<ARRAY_LENGTH) && (!matchFound))
       {
-        Serial.print(innerLoop);Serial.print("\t");Serial.println(SSID_ARRAY[innerLoop]);
+        if(use_serial)
+        {
+          Serial.print(innerLoop);Serial.print("\t");Serial.println(SSID_ARRAY[innerLoop]);
+        }
         #ifdef MPM4
           if(strcmp(SSID_ARRAY[innerLoop], WiFi.SSID(loopCount)) == 0)
         #else
@@ -281,8 +349,10 @@ uint8_t listNetworks() {
     }
   }
 
-  Serial.print("matchFound value: "); Serial.println(matchFound);
-  Serial.print("innerLoop: ");Serial.print(innerLoop);Serial.print("\t");Serial.println(SSID_ARRAY[innerLoop]);
-
+  if(use_serial)
+  {
+    Serial.print("matchFound value: "); Serial.println(matchFound);
+    Serial.print("innerLoop: ");Serial.print(innerLoop);Serial.print("\t");Serial.println(SSID_ARRAY[innerLoop]);
+  }
   return(innerLoop);
 }

@@ -138,7 +138,6 @@ void writeP1Name(char *p_name1, bool p_left)
   uint8_t length;
   uint8_t xpos;
 
-  Serial.print("Func: writeP1Name. P1Name: "); Serial.println(p_name1);
   matrix.setFont(&FreeMax9pt7b);                     // set name font
   matrix.setTextColor(RED);                       // red
   length = strlen(p_name1);
@@ -158,7 +157,6 @@ void writeP2Name(char *p_name2, bool p_left)
   uint8_t length;
   uint8_t xpos;
 
-  Serial.print("Func: writeP2Name. P2Name: "); Serial.println(p_name2);
   matrix.setFont(&FreeMax9pt7b);                     // set name font
   matrix.setTextColor(BLUE);     // blue
   length = strlen(p_name2);
