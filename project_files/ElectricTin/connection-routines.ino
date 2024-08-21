@@ -97,9 +97,15 @@ void wifiStart(void)
     matrix.print("Wifi Status: ");
     matrix.print(WiFi.status());
     matrix.show();
-    // disconnect the WiFi after board programming - wifi link is not disconnected after programming
+    // disconnect the WiFi after MPM4 board programming - wifi link is not disconnected after programming
     // any other (re)start probably disconnects the WiFi without having to do this
-  //  WiFi.disconnect();
+    #ifdef MPM4
+      #ifdef DEBUG
+        Serial.println("Disconnecting WiFi");
+      #endif
+      WiFi.disconnect();
+    #endif
+
     delay(500);
     loopCount++;
     Serial.print("_");Serial.print(loopCount);Serial.print("_");
