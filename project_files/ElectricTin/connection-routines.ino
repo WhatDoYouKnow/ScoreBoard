@@ -55,52 +55,6 @@ void wifiStart(void)
   matrix.show();
   delay(5000);
 
-  //clearScreen();
-  //write_big_title();
-
-  // //******************************************************************
-  // Serial.println("Going online with TP-Link_IoT_7981");
-  // WiFi.disconnect();
-  // Serial.print("WiFi status after disconnection: ");Serial.println(WiFi.status());
-
-  // loopCount = 0;
-
-  // WiFi.begin("TP-Link_IoT_7981", "helloworld");
-  // while(WiFi.status() != WL_CONNECTED)
-  // {
-  //   // Failed, retry
-  //   Serial.print(WiFi.status());
-  //   Serial.print(".");
-
-  // }
-    
-  // //   // disconnect the WiFi after board programming - wifi link is not disconnected after programming
-  // //   // any other (re)start probably disconnects the WiFi without having to do this
-  // //   WiFi.disconnect();
-  // //   delay(500);
-  // //   WiFi.begin("TP-Link_IoT_7981", "helloworld");
-  // //   loopCount++;
-  // //   Serial.print("_");Serial.print(loopCount);Serial.print("_");
-  // // }
-
-  // while(1)
-  // {
-  //   Serial.println("Waiting...");
-  //   delay(1000);
-  // }
-
-//***********************************************************************
-
-
-
-
-
-
-
-
-
-
-
   Serial.println("Scanning available networks...");
   networkNumber = listNetworks();
 
