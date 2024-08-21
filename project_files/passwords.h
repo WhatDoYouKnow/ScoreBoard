@@ -16,14 +16,20 @@
 
 // enter the details of your SSID and password for WiFi comms
 #define WIFI_SSID1      "your_ssid"
-#define WIFI_PASSWORD1  "your_password"
+#define WIFI_PWORD1     "your_password"
 
 // enter the details of any other WiFi networks the display may need to access
 #define WIFI_SSID2      "ssid_2"
-#define WIFI_PASSWORD2  "password_2"  
+#define WIFI_PWORD2     "password_2"  
+
+#define WIFI_SSID3      "ssid_3"
+#define WIFI_PWORD3     "password_3"  
+
+#define WIFI_SSID4      "ssid_4"
+#define WIFI_PWORD4     "password_4"  
 
 // these arrays hold the ssid/password so that on power-up, ssids are scanned
 // to find a matching value which is then used. 
-const char              SSID_ARRAY[][30] = {"your_ssid", "ssid_2"};
-const char              PASSWORD_ARRAY[][30] = {"your_password", "password_2"};
+const char              SSID_ARRAY[][30] = {WIFI_SSID1, WIFI_SSID2, WIFI_SSID3, WIFI_SSID4};
+const char              PASSWORD_ARRAY[][30] = {WIFI_PWORD1, WIFI_PWORD2, WIFI_PWORD3, WIFI_PWORD4};
 const uint8_t           ARRAY_LENGTH = sizeof(SSID_ARRAY)/sizeof(SSID_ARRAY[0]);
